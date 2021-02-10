@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+  django:
+    build: ./Toy
+    command: >
+      sh -c "python3 manage.py migrate &&
+             python3 manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./Toy:/app/api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+  frontend:
+    build: ./toy-ui
+    command: ["npm", "start"]
+    volumes:
+      - ./toy-ui:/app/frontend
+      - node-modules:/app/frontend/node_modules
+    ports:
+      - "3000:3000"
+
+volumes:
+  node-modules:
