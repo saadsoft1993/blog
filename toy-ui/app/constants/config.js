@@ -1,3 +1,3 @@
 export default {
-  baseUrl: 'https://7ae09b38d611.ngrok.io',
+  baseUrl: 'http://127.0.0.1:8000',
 };

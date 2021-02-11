@@ -1,53 +1,14 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
 from article.models import Article
 from writer.models import Writer
 
 
 class ArticleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Article
-        fields = "__all__"
-
-
-class CreateArticleSerializer(serializers.ModelSerializer):
-    written_by = serializers.SerializerMethodField('_user')
 
     class Meta:
         model = Article
-        fields = ['id', 'title', 'content', 'written_by']
-
-    def _user(self, obj):
-        request = self.context.get('request', None)
-        if request:
-            return request.user.id
-
-
-class ArticleListSerializer(serializers.ModelSerializer):
-    written_by = serializers.SerializerMethodField('_user')
-
-    class Meta:
-        model = Article
-        fields = ['id', 'title', 'content', 'written_by', 'status']
-
-    def _user(self, obj):
-        request = self.context.get('request', None)
-        if request:
-            return request.user.id
-
-
-class UpdateArticleSerializer(serializers.ModelSerializer):
-    edited_by = serializers.SerializerMethodField('_user')
-
-    class Meta:
-        model = Article
-        fields = ['id', 'title', 'content', 'edited_by', 'status']
-
-    def _user(self, obj):
-        request = self.context.get('request', None)
-        if request:
-            return request.user.id
+        fields = ['id', 'title', 'content', 'written_by', 'edited_by', 'status']
 
 
 class WriterSerializer(serializers.ModelSerializer):
@@ -73,7 +34,6 @@ class UserSerializer(serializers.ModelSerializer):
         )
         user.set_password(validated_data['password'])
         user.save()
-
         return user
 
 

@@ -1,48 +1,35 @@
 from datetime import datetime, timedelta
-from rest_framework import mixins, status, permissions, viewsets
+from django.db.models import Count, Q
+from rest_framework import mixins, permissions
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
-
-from article.api.serializer import CreateArticleSerializer, UpdateArticleSerializer, \
-    WriterSerializer, UserSerializer, CustomTokenObtainPairSerializer, ArticleListSerializer
+from article.api.serializer import ArticleSerializer, WriterSerializer, UserSerializer, CustomTokenObtainPairSerializer
 from article.models import Article
 from writer.models import Writer
-from django.db.models import Count, Q
 
 
-class ArticleViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericViewSet):
-    serializer_class = ArticleListSerializer
+class ArticleViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
+                     GenericViewSet):
+    serializer_class = ArticleSerializer
     queryset = Article.objects.all()
     permission_classes = [IsAuthenticated]
 
-    def create(self, request, *args, **kwargs):
-        serializer = CreateArticleSerializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    def perform_create(self, serializer):
+        article = serializer.save()
+        article.written_by = self.request.user
+        article.save()
 
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = UpdateArticleSerializer(instance, data=request.data, partial=partial, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        if getattr(instance, '_prefetched_objects_cache', None):
-            instance._prefetched_objects_cache = {}
-        return Response(serializer.data)
+    def perform_update(self, serializer):
+        article = serializer.save()
+        article.edited_by = self.request.user
+        article.save()
 
 
 class CreateUserView(CreateAPIView):
     model = Writer
-    permission_classes = [
-        permissions.AllowAny  # Or anon users can't register
-    ]
+    permission_classes = [permissions.AllowAny]
     serializer_class = UserSerializer
 
 
@@ -58,5 +45,4 @@ class WriterListViewSet(mixins.ListModelMixin, GenericViewSet):
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    # Replace the serializer with your custom
     serializer_class = CustomTokenObtainPairSerializer
