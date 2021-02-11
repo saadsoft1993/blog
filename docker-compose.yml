@@ -21,7 +21,6 @@ services:
     command: ["npm", "start"]
     volumes:
       - ./toy-ui:/app/frontend
-      - node-modules:/app/frontend/node_modules
     ports:
       - "3000:3000"
 

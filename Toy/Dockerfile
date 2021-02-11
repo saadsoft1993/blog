@@ -1,9 +1,9 @@
-FROM python:3.8
+FROM python:3.7
 
 ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update \
-  && apt-get install -y python3.7-dev python3-pip libpq-dev curl \
+  && apt-get install -y python3.7-dev python3-pip libpq-dev curl pipenv \
   && apt-get clean all \
   && rm -rf /var/lib/apt/lists/*
 
